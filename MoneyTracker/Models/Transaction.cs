@@ -2,14 +2,14 @@
 {
     public class Transaction
     {
-        private int Id { get; set; }
-        private int UserId { get; set; }
-        private User User { get; set; }
-        private string Description { get; set; } = string.Empty;
-        private DateTime Date { get; set; } = DateTime.Now;
-        private decimal Value { get; set; }
-        private string CategoryId { get; set; }
-        private Category TransactionCategory { get; set; }
-        private bool IsIncome { get; set; }
+        public int Id { get; private set; }
+        public int UserId { get; private set; }
+        public User User { get; private set; }
+        public string Description { get; private set; } = string.Empty;
+        public DateTime Date { get; private set; } = DateTime.Now;
+        public decimal Value { get; private set; }
+        public string CategoryId { get; private set; }
+        public Category TransactionCategory { get; private set; }
+        public bool IsIncome { get; private set; }
     }
 }

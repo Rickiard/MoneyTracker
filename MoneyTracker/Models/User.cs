@@ -2,10 +2,11 @@
 {
     public class User
     {
-        private int Id { get; set; }
-        private string Username { get; set; }
-        private string Email { get; set; }
-        private string PasswordHash { get; set; }
-        private DateTime CreatedAt { get; set; }
+        public int Id { get; private set; }
+        public string Username { get; private set; }
+        public string Email { get; private set; }
+        public string PasswordHash { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public List<Transaction> Transactions { get; private set; }
     }
 }

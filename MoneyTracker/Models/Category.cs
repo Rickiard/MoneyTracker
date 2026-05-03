@@ -2,9 +2,9 @@
 {
     public class Category
     {
-        private int Id { get; set; }
-        private string Name { get; set; }
-        private string Icon { get; set; }
-        private string ColorHex { get; set; }
+        public int Id { get; private set; }
+        public string Name { get; private set; }
+        public string Icon { get; private set; }
+        public string ColorHex { get; private set; }
     }
 }

@@ -5,12 +5,12 @@ using MoneyTracker.Models;
 
 namespace MoneyTracker.Controllers
 {
-    public class DashboardController : Controller
+    public class TransactionsController : Controller
     {
-        private readonly ILogger<DashboardController> _logger;
+        private readonly ILogger<TransactionsController> _logger;
         private readonly ApplicationDbContext _context;
 
-        public DashboardController(ILogger<DashboardController> logger, ApplicationDbContext context)
+        public TransactionsController(ILogger<TransactionsController> logger, ApplicationDbContext context)
         {
             _logger = logger;
             _context = context;
@@ -18,10 +18,15 @@ namespace MoneyTracker.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            var transactions = await _context.Transactions
-                .Include(t => t.TransactionCategory)
-                .OrderByDescending(t => t.Date)
-                .ToListAsync();
+            var user = _context.Users.Include(u => u.Transactions).FirstOrDefault(u => u.Id == 1);
+            var transactions = user.Transactions
+                .OrderByDescending(t => t.Date);
+
+            if (!transactions.Any())
+            {
+                transactions = null;
+            }
+
             return View(transactions);
         }
 
@@ -37,10 +42,13 @@ namespace MoneyTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Transactions.Add(transaction);
+                var user = _context.Users.Include(u => u.Transactions).FirstOrDefault(u => u.Id == 1);
+                transaction.UserId = user.Id;
+                user.Transactions.Add(transaction);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Dashboard));
+                return RedirectToAction(nameof(Dashboard), "Transactions");
             }
+
             ViewBag.Categories = _context.Categories.ToList();
             return View(transaction);
         }
@@ -50,7 +58,8 @@ namespace MoneyTracker.Controllers
             if (id == null)
                 return NotFound();
 
-            var transaction = await _context.Transactions.FindAsync(id);
+            var user = _context.Users.Include(u => u.Transactions).FirstOrDefault(u => u.Id == 1);
+            var transaction = user.Transactions.Where(t => t.Id == id);
             if (transaction == null)
                 return NotFound();
 

@@ -8,12 +8,6 @@ builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (builder.Environment.IsProduction() || builder.Environment.EnvironmentName == "Docker")
-{
-    // Docker environment - use SQL Server connection
-    connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? connectionString;
-}
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -37,6 +31,6 @@ app.UseAuthorization();
 app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Dashboard}/{action=Dashboard}/{id?}");
+    pattern: "{controller=Transactions}/{action=Dashboard}/{id?}");
 
 app.Run();

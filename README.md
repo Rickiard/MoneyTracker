@@ -9,6 +9,7 @@ A simple and organized web application for tracking personal finances, built wit
 - View all transactions in a dashboard
 - User-friendly forms with validation
 - Responsive layout using Bootstrap
+- **PWA support**: Can be installed as a mobile app when accessed via HTTPS (see below)
 - **Dockerized**: Run with Docker and Docker Compose
 
 ## Project Structure
@@ -61,6 +62,10 @@ See `PROJECT_STRUCTURE.md` for a detailed structure.
 3. The connection string is pre-configured for Docker Compose in `docker-compose.yml`.
 
 > **Note:** The default SQL Server password is set in `docker-compose.yml`. Change it for production use.
+
+## Progressive Web App (PWA)
+
+Money Tracker supports PWA features. When accessed via HTTPS on a mobile device, you can install the app directly to your home screen, providing a native-like experience with offline support and fast startup.
 
 ## Requirements
 

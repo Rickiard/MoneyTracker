@@ -1,0 +1,131 @@
+@model List<Transaction>
+
+@{
+    ViewData["Title"] = "Money Tracker Dashboard";
+}
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-4">Money Tracker</h1>
+            <h2>Track your money smartly</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-action="AddTransaction" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Add Transaction
+            </a>
+        </div>
+    </div>
+
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No transactions yet!</h4>
+            <p>Start tracking your money by adding your first transaction.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Transactions</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var transaction in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <small>@transaction.Date.ToString("dd/MM/yyyy HH:mm")</small>
+                                </td>
+                                <td>@transaction.Description</td>
+                                <td>
+                                    @if (transaction.TransactionCategory != null)
+                                    {
+                                        <span class="badge" style="background-color: @transaction.TransactionCategory.ColorHex">
+                                            @transaction.TransactionCategory.Name
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (transaction.IsIncome)
+                                    {
+                                        <span class="badge bg-success">Income</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Expense</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <strong class="@(transaction.IsIncome ? "text-success" : "text-danger")">
+                                        @(transaction.IsIncome ? "+" : "-")@transaction.Value.ToString("C")
+                                    </strong>
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="EditTransaction" asp-route-id="@transaction.Id" class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="DeleteTransaction" asp-route-id="@transaction.Id" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?');">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Income</h6>
+                        <h3>@Model.Where(t => t.IsIncome).Sum(t => t.Value).ToString("C")</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Expenses</h6>
+                        <h3>@Model.Where(t => !t.IsIncome).Sum(t => t.Value).ToString("C")</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Balance</h6>
+                        <h3>@(Model.Where(t => t.IsIncome).Sum(t => t.Value) - Model.Where(t => !t.IsIncome).Sum(t => t.Value)).ToString("C")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>

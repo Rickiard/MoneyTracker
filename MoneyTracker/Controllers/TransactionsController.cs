@@ -124,12 +124,10 @@ namespace MoneyTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteTransaction(int id)
         {
-            var transaction = await _context.Transactions.FindAsync(id);
-            if (transaction != null)
-            {
-                _context.Transactions.Remove(transaction);
-                await _context.SaveChangesAsync();
-            }
+            var user = _context.Users.Include(u => u.Transactions).FirstOrDefault(u => u.Id == 1);
+            var toRemoveTransaction = user.Transactions.FirstOrDefault(t => t.Id == id);
+            _context.Transactions.Remove(toRemoveTransaction);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Dashboard));
         }
     }

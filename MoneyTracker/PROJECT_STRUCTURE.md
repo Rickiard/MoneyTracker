@@ -47,14 +47,24 @@
 - **ApplicationDbContextModelSnapshot.cs** - Current model snapshot
 
 ### 📁 wwwroot/
+- **css/site.css** - Custom CSS styles
 - **js/site.js** - Custom JavaScript
+- **manifest.json** - PWA manifest file
+- **sw.js** - Service Worker for PWA support
 - **lib/** - Third-party libraries (Bootstrap, jQuery, etc.)
 - **bootstrap-icons/** - Icon fonts
+
+### 📁 Properties/
+- **launchSettings.json** - Project launch profiles and environment settings
 
 ### 📁 Root Files
 - **Program.cs** - Application startup and configuration
 - **appsettings.json** - Application settings
+- **appsettings.Development.json** - Development environment settings
 - **MoneyTracker.csproj** - Project file
+- **Dockerfile** - Docker build instructions
+- **docker-compose.yml** - Multi-container orchestration
+- **.dockerignore** - Docker ignore rules
 
 ## Key Improvements
 

@@ -16,19 +16,19 @@
 
                 <div class="mb-3">
                     <label asp-for="Description" class="form-label">Description</label>
-                    <input asp-for="Description" class="form-control" placeholder="Enter description" required />
+                    <input asp-for="Description" class="form-control" placeholder="@Model.Description" required />
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="Value" class="form-label">Amount</label>
-                    <input asp-for="Value" type="number" step="0.01" class="form-control" placeholder="0.00" required />
+                    <input asp-for="Value" type="number" step="0.01" class="form-control" placeholder="@Model.Value" required />
                     <span asp-validation-for="Value" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="Date" class="form-label">Date</label>
-                    <input asp-for="Date" type="datetime-local" class="form-control" required />
+                    <input asp-for="Date" type="datetime-local" class="form-control" placeholder="@Model.Date" required />
                     <span asp-validation-for="Date" class="text-danger"></span>
                 </div>
 
@@ -38,7 +38,7 @@
                         <option value="">-- Select a category --</option>
                         @foreach (var category in ViewBag.Categories)
                         {
-                            <option value="@category.Id" selected="@(Model.CategoryId == category.Id.ToString())">@category.Name</option>
+                            <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
                         }
                     </select>
                     <span asp-validation-for="CategoryId" class="text-danger"></span>
@@ -59,9 +59,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

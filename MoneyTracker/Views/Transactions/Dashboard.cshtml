@@ -54,7 +54,7 @@
                                     @if (transaction.TransactionCategory != null)
                                     {
                                         <span class="badge" style="background-color: @transaction.TransactionCategory.ColorHex">
-                                            @transaction.TransactionCategory.Name
+                                            @transaction.TransactionCategory.Icon @transaction.TransactionCategory.Name
                                         </span>
                                     }
                                     else
@@ -74,17 +74,17 @@
                                 </td>
                                 <td class="text-end">
                                     <strong class="@(transaction.IsIncome ? "text-success" : "text-danger")">
-                                        @(transaction.IsIncome ? "+" : "-")@transaction.Value.ToString("C")
+                                        @(transaction.IsIncome ? "+" : "-")@transaction.Value.ToString("N2")€
                                     </strong>
                                 </td>
                                 <td class="text-center">
                                     <a asp-action="EditTransaction" asp-route-id="@transaction.Id" class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="bi bi-pencil"></i>
+                                        Edit
                                     </a>
                                     <form asp-action="DeleteTransaction" asp-route-id="@transaction.Id" method="post" style="display:inline;">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?');">
-                                            <i class="bi bi-trash"></i>
+                                            Delete
                                         </button>
                                     </form>
                                 </td>
@@ -94,13 +94,12 @@
                 </table>
             </div>
         </div>
-
         <div class="row mt-4">
             <div class="col-md-4">
                 <div class="card bg-success text-white">
                     <div class="card-body">
                         <h6 class="card-title">Total Income</h6>
-                        <h3>@Model.Where(t => t.IsIncome).Sum(t => t.Value).ToString("C")</h3>
+                        <h3>@Model.Where(t => t.IsIncome).Sum(t => t.Value).ToString("N2")€</h3>
                     </div>
                 </div>
             </div>
@@ -108,7 +107,7 @@
                 <div class="card bg-danger text-white">
                     <div class="card-body">
                         <h6 class="card-title">Total Expenses</h6>
-                        <h3>@Model.Where(t => !t.IsIncome).Sum(t => t.Value).ToString("C")</h3>
+                        <h3>@Model.Where(t => !t.IsIncome).Sum(t => t.Value).ToString("N2")€</h3>
                     </div>
                 </div>
             </div>
@@ -116,7 +115,12 @@
                 <div class="card bg-info text-white">
                     <div class="card-body">
                         <h6 class="card-title">Balance</h6>
-                        <h3>@(Model.Where(t => t.IsIncome).Sum(t => t.Value) - Model.Where(t => !t.IsIncome).Sum(t => t.Value)).ToString("C")</h3>
+                        @{
+                            var totalIncomes = Model.Where(t => t.IsIncome).Sum(t => t.Value);
+                            var totalExpenses = Model.Where(t => !t.IsIncome).Sum(t => t.Value);
+                            var balance = totalIncomes - totalExpenses;
+                        }
+                        <h3>@balance.ToString("N2")€</h3>
                     </div>
                 </div>
             </div>
@@ -124,8 +128,97 @@
     }
 </div>
 
+<div class="row mt-4">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-success">
+            <div class="card-header bg-white text-success">
+                <h5 class="mb-0 text-center font-weight-bold">Income by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChartIncome" style="max-height: 280px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-white text-danger">
+                <h5 class="mb-0 text-center font-weight-bold">Expenses by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChartExpenses" style="max-height: 280px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .table-hover tbody tr:hover {
         background-color: #f5f5f5;
     }
 </style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script>
+        Chart.register(ChartDataLabels);
+
+        const labels = @Json.Serialize(((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Name));
+        const colors = @Json.Serialize(((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.ColorHex));
+        const icons  = @Json.Serialize(((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Icon));
+        const dataIncome = @Json.Serialize(ViewBag.ChartDataIncome);
+        const dataExpenses = @Json.Serialize(ViewBag.ChartDataExpenses);
+
+        const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+        legend: {
+        position: 'bottom', 
+        },
+        datalabels: {
+        color: '#fff',
+        anchor: 'center',
+        align: 'center',
+        font: {
+        weight: 'bold',
+        size: 12
+        },
+        formatter: (value, context) => {
+        const icon = icons[context.dataIndex];
+        return value > 0 ? `${icon}\n${value.toFixed(2)}€` : null;
+        },
+        textAlign: 'center' 
+        }
+        },
+        layout: {
+        padding: 10
+        }
+        };
+
+        new Chart(document.getElementById('categoryChartIncome'), {
+        type: 'doughnut',
+        data: {
+        labels: labels,
+        datasets: [{
+        data: dataIncome,
+        backgroundColor: colors
+        }]
+        },
+        options: commonOptions 
+        });
+
+        new Chart(document.getElementById('categoryChartExpenses'), {
+        type: 'doughnut',
+        data: {
+        labels: labels,
+        datasets: [{
+        data: dataExpenses,
+        backgroundColor: colors
+        }]
+        },
+        options: commonOptions
+        });
+    </script>
+}

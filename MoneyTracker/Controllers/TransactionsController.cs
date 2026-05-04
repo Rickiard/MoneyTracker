@@ -20,12 +20,49 @@ namespace MoneyTracker.Controllers
         {
             var user = _context.Users.Include(u => u.Transactions).FirstOrDefault(u => u.Id == 1);
             var transactions = user.Transactions
-                .OrderByDescending(t => t.Date);
+                .OrderByDescending(t => t.Date)
+                .ToList();
 
             if (!transactions.Any())
             {
                 transactions = null;
             }
+            else
+            {
+                foreach (Transaction transaction in transactions)
+                {
+                    transaction.TransactionCategory = _context.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
+                }
+            }
+
+            List<decimal> chartDataIncome = new List<decimal>();
+            List<decimal> chartDataExpenses = new List<decimal>();
+
+            ViewBag.ChartLabels = _context.Categories.ToList();
+            foreach(Category category in _context.Categories)
+            {
+                decimal valueIncome = 0;
+                decimal valueExpenses = 0;
+
+                foreach (Transaction transaction in transactions)
+                {
+                    if (transaction.CategoryId == category.Id)
+                    {
+                        if(transaction.IsIncome)
+                        {
+                            valueIncome += transaction.Value;
+                        }
+                        else
+                        {                             
+                            valueExpenses += transaction.Value;
+                        }
+                    }
+                }
+                chartDataIncome.Add(valueIncome);
+                chartDataExpenses.Add(valueExpenses);
+            }
+            ViewBag.ChartDataIncome = chartDataIncome;
+            ViewBag.ChartDataExpenses = chartDataExpenses;
 
             return View(transactions);
         }
@@ -55,13 +92,8 @@ namespace MoneyTracker.Controllers
 
         public async Task<IActionResult> EditTransaction(int? id)
         {
-            if (id == null)
-                return NotFound();
-
-            var user = _context.Users.Include(u => u.Transactions).FirstOrDefault(u => u.Id == 1);
-            var transaction = user.Transactions.Where(t => t.Id == id);
-            if (transaction == null)
-                return NotFound();
+            Transaction transaction = await _context.Transactions
+                    .FirstOrDefaultAsync(t => t.Id == id && t.UserId == 1);
 
             ViewBag.Categories = _context.Categories.ToList();
             return View(transaction);
@@ -69,25 +101,20 @@ namespace MoneyTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditTransaction(int id, Transaction transaction)
+        public async Task<IActionResult> EditTransaction(Transaction transaction)
         {
-            if (id != transaction.Id)
-                return NotFound();
-
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(transaction);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TransactionExists(transaction.Id))
-                        return NotFound();
-                    throw;
-                }
-                return RedirectToAction(nameof(Dashboard));
+                var user = _context.Users.Include(u => u.Transactions).FirstOrDefault(u => u.Id == 1);
+                var toChangeTransaction = user.Transactions.FirstOrDefault(t => t.Id == transaction.Id);
+                toChangeTransaction.Description = transaction.Description;
+                toChangeTransaction.Date = transaction.Date;
+                toChangeTransaction.Value = transaction.Value;
+                toChangeTransaction.CategoryId = transaction.CategoryId;
+                toChangeTransaction.IsIncome = transaction.IsIncome;
+                await _context.SaveChangesAsync();
+              
+                return RedirectToAction(nameof(Dashboard), "Transactions");
             }
             ViewBag.Categories = _context.Categories.ToList();
             return View(transaction);
@@ -104,17 +131,6 @@ namespace MoneyTracker.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Dashboard));
-        }
-
-        private bool TransactionExists(int id)
-        {
-            return _context.Transactions.Any(e => e.Id == id);
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

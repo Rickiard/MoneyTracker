@@ -23,46 +23,42 @@ namespace MoneyTracker.Controllers
                 .OrderByDescending(t => t.Date)
                 .ToList();
 
-            if (!transactions.Any())
-            {
-                transactions = null;
-            }
-            else
+            if (transactions.Any())
             {
                 foreach (Transaction transaction in transactions)
                 {
                     transaction.TransactionCategory = _context.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
                 }
-            }
 
-            List<decimal> chartDataIncome = new List<decimal>();
-            List<decimal> chartDataExpenses = new List<decimal>();
+                List<decimal> chartDataIncome = new List<decimal>();
+                List<decimal> chartDataExpenses = new List<decimal>();
 
-            ViewBag.ChartLabels = _context.Categories.ToList();
-            foreach(Category category in _context.Categories)
-            {
-                decimal valueIncome = 0;
-                decimal valueExpenses = 0;
-
-                foreach (Transaction transaction in transactions)
+                ViewBag.ChartLabels = _context.Categories.ToList();
+                foreach (Category category in _context.Categories)
                 {
-                    if (transaction.CategoryId == category.Id)
+                    decimal valueIncome = 0;
+                    decimal valueExpenses = 0;
+
+                    foreach (Transaction transaction in transactions)
                     {
-                        if(transaction.IsIncome)
+                        if (transaction.CategoryId == category.Id)
                         {
-                            valueIncome += transaction.Value;
-                        }
-                        else
-                        {                             
-                            valueExpenses += transaction.Value;
+                            if (transaction.IsIncome)
+                            {
+                                valueIncome += transaction.Value;
+                            }
+                            else
+                            {
+                                valueExpenses += transaction.Value;
+                            }
                         }
                     }
+                    chartDataIncome.Add(valueIncome);
+                    chartDataExpenses.Add(valueExpenses);
                 }
-                chartDataIncome.Add(valueIncome);
-                chartDataExpenses.Add(valueExpenses);
+                ViewBag.ChartDataIncome = chartDataIncome;
+                ViewBag.ChartDataExpenses = chartDataExpenses;
             }
-            ViewBag.ChartDataIncome = chartDataIncome;
-            ViewBag.ChartDataExpenses = chartDataExpenses;
 
             return View(transactions);
         }
@@ -83,7 +79,7 @@ namespace MoneyTracker.Controllers
                 transaction.UserId = user.Id;
                 user.Transactions.Add(transaction);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Dashboard), "Transactions");
+                return RedirectToAction(nameof(Dashboard));
             }
 
             ViewBag.Categories = _context.Categories.ToList();
@@ -114,7 +110,7 @@ namespace MoneyTracker.Controllers
                 toChangeTransaction.IsIncome = transaction.IsIncome;
                 await _context.SaveChangesAsync();
               
-                return RedirectToAction(nameof(Dashboard), "Transactions");
+                return RedirectToAction(nameof(Dashboard));
             }
             ViewBag.Categories = _context.Categories.ToList();
             return View(transaction);

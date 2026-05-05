@@ -125,32 +125,31 @@
                 </div>
             </div>
         </div>
-    }
-</div>
 
-<div class="row mt-4">
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-success">
-            <div class="card-header bg-white text-success">
-                <h5 class="mb-0 text-center font-weight-bold">Income by Category</h5>
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-white text-success">
+                    <h5 class="mb-0 text-center font-weight-bold">Income by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChartIncome" style="max-height: 280px;"></canvas>
+                </div>
             </div>
-            <div class="card-body">
-                <canvas id="categoryChartIncome" style="max-height: 280px;"></canvas>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-white text-danger">
+                    <h5 class="mb-0 text-center font-weight-bold">Expenses by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChartExpenses" style="max-height: 280px;"></canvas>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-danger">
-            <div class="card-header bg-white text-danger">
-                <h5 class="mb-0 text-center font-weight-bold">Expenses by Category</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="categoryChartExpenses" style="max-height: 280px;"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
+}
 
 <style>
     .table-hover tbody tr:hover {
@@ -164,61 +163,59 @@
     <script>
         Chart.register(ChartDataLabels);
 
-        const labels = @Json.Serialize(((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Name));
-        const colors = @Json.Serialize(((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.ColorHex));
-        const icons  = @Json.Serialize(((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Icon));
-        const dataIncome = @Json.Serialize(ViewBag.ChartDataIncome);
-        const dataExpenses = @Json.Serialize(ViewBag.ChartDataExpenses);
+        const labels = @Json.Serialize(ViewBag.ChartLabels != null
+                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Name)
+                    : new List<string>());
+        
+        const colors = @Json.Serialize(ViewBag.ChartLabels != null
+                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.ColorHex)
+                    : new List<string>());
+            
+        const icons  = @Json.Serialize(ViewBag.ChartLabels != null
+                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Icon)
+                    : new List<string>());
+
+        const dataIncome = @Json.Serialize(ViewBag.ChartDataIncome ?? new List<decimal>());
+        const dataExpenses = @Json.Serialize(ViewBag.ChartDataExpenses ?? new List<decimal>());
 
         const commonOptions = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-        legend: {
-        position: 'bottom', 
-        },
+        legend: { position: 'bottom' },
         datalabels: {
         color: '#fff',
         anchor: 'center',
         align: 'center',
-        font: {
-        weight: 'bold',
-        size: 12
-        },
+        font: { weight: 'bold', size: 12 },
         formatter: (value, context) => {
         const icon = icons[context.dataIndex];
         return value > 0 ? `${icon}\n${value.toFixed(2)}€` : null;
         },
-        textAlign: 'center' 
+        textAlign: 'center'
         }
         },
-        layout: {
-        padding: 10
-        }
+        layout: { padding: 10 }
         };
 
+        if (labels.length > 0) {
         new Chart(document.getElementById('categoryChartIncome'), {
         type: 'doughnut',
         data: {
         labels: labels,
-        datasets: [{
-        data: dataIncome,
-        backgroundColor: colors
-        }]
+        datasets: [{ data: dataIncome, backgroundColor: colors }]
         },
-        options: commonOptions 
+        options: commonOptions
         });
 
         new Chart(document.getElementById('categoryChartExpenses'), {
         type: 'doughnut',
         data: {
         labels: labels,
-        datasets: [{
-        data: dataExpenses,
-        backgroundColor: colors
-        }]
+        datasets: [{ data: dataExpenses, backgroundColor: colors }]
         },
         options: commonOptions
         });
+        }
     </script>
 }

@@ -2,10 +2,10 @@
 
 ## Organized File Structure
 
-### 📁 Controllers/
+### Controllers/
 - **TransactionsController.cs** - Handles all transaction CRUD operations
 
-### 📁 Models/
+### Models/
 - **Entities/** - Domain model classes
   - Transaction.cs - Transaction entity
   - User.cs - User entity
@@ -13,7 +13,7 @@
 - **ViewModels/** - View-specific models
   - ErrorViewModel.cs - Error display model
 
-### 📁 Views/
+### Views/
 - **Transactions/** - All transaction-related views
   - Dashboard.cshtml - Displays a list of all transactions with summary and filtering options
   - AddTransaction.cshtml - Form for adding a new transaction, with validation and category selection
@@ -26,10 +26,10 @@
   - _ViewImports.cshtml - Imports common namespaces and tag helpers for all views
   - _ViewStart.cshtml - Configures view startup settings (e.g., layout)
 
-### 📁 Data/
+### Data/
 - **ApplicationDbContext.cs** - Entity Framework database context
 
-### 📁 Migrations/
+### Migrations/
 - **20260503231031_InitialDatabase.cs** - Initial database schema
 - **20260503231031_InitialDatabase.Designer.cs** - Migration designer metadata
 - **20260504094024_AddCategories.cs** - Add categories migration
@@ -46,7 +46,7 @@
 - **20260504144850_CategoryIdToInt.Designer.cs**
 - **ApplicationDbContextModelSnapshot.cs** - Current model snapshot
 
-### 📁 wwwroot/
+### wwwroot/
 - **css/site.css** - Custom CSS styles
 - **js/site.js** - Custom JavaScript
 - **manifest.json** - PWA manifest file
@@ -54,10 +54,10 @@
 - **lib/** - Third-party libraries (Bootstrap, jQuery, etc.)
 - **bootstrap-icons/** - Icon fonts
 
-### 📁 Properties/
+### Properties/
 - **launchSettings.json** - Project launch profiles and environment settings
 
-### 📁 Root Files
+### Root Files
 - **Program.cs** - Application startup and configuration
 - **appsettings.json** - Application settings
 - **appsettings.Development.json** - Development environment settings
@@ -65,19 +65,3 @@
 - **Dockerfile** - Docker build instructions
 - **docker-compose.yml** - Multi-container orchestration
 - **.dockerignore** - Docker ignore rules
-
-## Key Improvements
-
-✅ **Better Organization**: Models separated into Entities and ViewModels  
-✅ **Unified Views**: All transaction views in one folder (Views/Transactions/)  
-✅ **Removed Redundancy**: Deleted unused AddTransactionController  
-✅ **Clear Separation of Concerns**: Each folder has a specific purpose  
-✅ **Scalability**: Easy to add new features (e.g., Reports, Analytics)  
-
-## Future Improvements (Optional)
-
-- Add **Services/** folder for business logic (TransactionService, etc.)
-- Add **Repositories/** folder for data access patterns
-- Add **Extensions/** folder for helper extensions
-- Create **wwwroot/css/** and **wwwroot/js/** for custom styles and scripts
-- Add **Middleware/** folder if custom middleware is needed

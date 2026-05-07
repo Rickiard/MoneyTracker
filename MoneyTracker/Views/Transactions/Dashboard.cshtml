@@ -163,20 +163,18 @@
     <script>
         Chart.register(ChartDataLabels);
 
-        const labels = @Json.Serialize(ViewBag.ChartLabels != null
-                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Name)
+        const labels = @Json.Serialize(ViewBag.Summary?.Labels != null
+                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.Summary.Labels).Select(c => c.Name)
                     : new List<string>());
-        
-        const colors = @Json.Serialize(ViewBag.ChartLabels != null
-                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.ColorHex)
+        const colors = @Json.Serialize(ViewBag.Summary?.Labels != null
+                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.Summary.Labels).Select(c => c.ColorHex)
                     : new List<string>());
-            
-        const icons  = @Json.Serialize(ViewBag.ChartLabels != null
-                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.ChartLabels).Select(c => c.Icon)
+        const icons = @Json.Serialize(ViewBag.Summary?.Labels != null
+                    ? ((IEnumerable<MoneyTracker.Models.Category>)ViewBag.Summary.Labels).Select(c => c.Icon)
                     : new List<string>());
 
-        const dataIncome = @Json.Serialize(ViewBag.ChartDataIncome ?? new List<decimal>());
-        const dataExpenses = @Json.Serialize(ViewBag.ChartDataExpenses ?? new List<decimal>());
+        const dataIncome = @Json.Serialize(ViewBag.Summary?.Incomes ?? new List<decimal>());
+        const dataExpenses = @Json.Serialize(ViewBag.Summary?.Expenses ?? new List<decimal>());
 
         const commonOptions = {
         responsive: true,

@@ -15,8 +15,10 @@ A simple and organized web application for tracking personal finances, built wit
 ## Project Structure
 
 - **Controllers/**: Handles transaction CRUD operations
+- **DTOs/**: Data Transfer Objects for cross-layer data transfer (e.g., DashboardSummaryDto.cs)
 - **Models/Entities/**: Domain models (Transaction, User, Category)
 - **Models/ViewModels/**: View-specific models (e.g., ErrorViewModel)
+- **Services/**: Business logic layer containing service interfaces and implementations
 - **Views/Transactions/**: Transaction-related pages (Dashboard, Add, Edit)
 - **Views/Shared/**: Layout, error, and shared partials
 - **Data/**: Entity Framework database context
@@ -41,7 +43,7 @@ See `PROJECT_STRUCTURE.md` for a detailed structure.
    ```sh
    docker-compose up --build
    ```
-4. The API will be available at `http://localhost:8080` and SQL Server at `localhost:1433` and Redis at `localhost:6379`.
+4. The API will be available at `http://localhost:8080` and SQL Server at `localhost:1433` and Redis Cache at `localhost:6379`.
 5. The connection string is pre-configured for Docker Compose in `docker-compose.yml`.
 
 > **Note:** The default SQL Server password is set in `docker-compose.yml`. Change it for production use.

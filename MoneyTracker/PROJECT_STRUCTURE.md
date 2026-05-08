@@ -5,6 +5,9 @@
 ### Controllers/
 - **TransactionsController.cs** - Handles all transaction CRUD operations
 
+### DTOs/
+- **DashboardSummaryDto.cs** - Data Transfer Object for the dashboard summary
+
 ### Models/
 - **Entities/** - Domain model classes
   - Transaction.cs - Transaction entity
@@ -12,6 +15,10 @@
   - Category.cs - Category entity
 - **ViewModels/** - View-specific models
   - ErrorViewModel.cs - Error display model
+
+### Services/
+- **ITransactionService.cs** - Interface defining transaction service operations
+- **TransactionService.cs** - Implementation of business logic for transactions
 
 ### Views/
 - **Transactions/** - All transaction-related views

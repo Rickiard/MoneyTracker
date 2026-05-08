@@ -1,10 +1,11 @@
-﻿namespace MoneyTracker.Services
-{
-    using Microsoft.EntityFrameworkCore;
-    using MoneyTracker.Models;
-    using MoneyTracker.DTOs;
-    using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.EntityFrameworkCore;
+using MoneyTracker.Models;
+using MoneyTracker.DTOs;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
+namespace MoneyTracker.Services
+{
     public class TransactionService : ITransactionService
     {
         private readonly ApplicationDbContext _context;
@@ -18,101 +19,141 @@
 
         public async Task<List<Category>> GetCategoriesAsync()
         {
-            return await _context.Categories.ToListAsync();
+            var cacheKey = "categories_all";
+
+            var cached = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cached))
+                return JsonSerializer.Deserialize<List<Category>>(cached)!;
+
+            var categories = await _context.Categories.ToListAsync();
+
+            await _cache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(categories),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6)
+                });
+
+            return categories;
         }
 
-        public async Task<Transaction> GetTransactionByIdAsync(int id, int userId)
+        public async Task<Transaction?> GetTransactionByIdAsync(int id, int userId)
         {
-            return await _context.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+            return await _context.Transactions
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         }
 
         public async Task<List<Transaction>> GetDashboardTransactionsAsync(int userId)
         {
-            var user = await _context.Users.Include(u => u.Transactions).FirstOrDefaultAsync(u => u.Id == userId);
-            var transactions = user.Transactions
+            var cacheKey = $"transactions_dashboard_{userId}";
+
+            var cached = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cached))
+                return JsonSerializer.Deserialize<List<Transaction>>(cached)!;
+
+            var transactions = await _context.Transactions
+                .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.Date)
-                .ToList();
+                .ToListAsync();
+
+            await _cache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(transactions),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                });
 
             return transactions;
         }
 
         public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(List<Transaction> transactions, int userId)
         {
-            var ChartLabels = new List<Category>();
-            var ChartDataIncome = new List<decimal>();
-            var ChartDataExpenses = new List<decimal>();
+            var cacheKey = $"dashboard_summary_{userId}";
 
-            if (transactions.Any())
+            var cached = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cached))
+                return JsonSerializer.Deserialize<DashboardSummaryDto>(cached)!;
+
+            var categories = await GetCategoriesAsync();
+
+            var income = new List<decimal>(new decimal[categories.Count]);
+            var expenses = new List<decimal>(new decimal[categories.Count]);
+
+            foreach (var transaction in transactions)
             {
-                foreach (Transaction transaction in transactions)
-                {
-                    transaction.TransactionCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Id == transaction.CategoryId);
-                }
+                var index = categories.FindIndex(c => c.Id == transaction.CategoryId);
+                if (index == -1) continue;
 
-                List<decimal> chartDataIncome = new List<decimal>();
-                List<decimal> chartDataExpenses = new List<decimal>();
-
-                ChartLabels = _context.Categories.ToList();
-                foreach (Category category in _context.Categories)
-                {
-                    decimal valueIncome = 0;
-                    decimal valueExpenses = 0;
-
-                    foreach (Transaction transaction in transactions)
-                    {
-                        if (transaction.CategoryId == category.Id)
-                        {
-                            if (transaction.IsIncome)
-                            {
-                                valueIncome += transaction.Value;
-                            }
-                            else
-                            {
-                                valueExpenses += transaction.Value;
-                            }
-                        }
-                    }
-                    chartDataIncome.Add(valueIncome);
-                    chartDataExpenses.Add(valueExpenses);
-                }
-                ChartDataIncome = chartDataIncome;
-                ChartDataExpenses = chartDataExpenses;
+                if (transaction.IsIncome)
+                    income[index] += transaction.Value;
+                else
+                    expenses[index] += transaction.Value;
             }
 
-            return new DashboardSummaryDto
+            var result = new DashboardSummaryDto
             {
-                Labels = ChartLabels,
-                Expenses = ChartDataExpenses,
-                Incomes = ChartDataIncome
+                Labels = categories,
+                Incomes = income,
+                Expenses = expenses
             };
+
+            await _cache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(result),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                });
+
+            return result;
         }
 
         public async Task AddTransactionAsync(Transaction transaction, int userId)
         {
-            var user = await _context.Users.Include(u => u.Transactions).FirstOrDefaultAsync(u => u.Id == userId);
-            transaction.UserId = user.Id;
-            user.Transactions.Add(transaction);
+            transaction.UserId = userId;
+            _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
+
+            await InvalidateCache(userId);
         }
 
         public async Task EditTransactionAsync(Transaction transaction, int userId)
         {
-            var user = await _context.Users.Include(u => u.Transactions).FirstOrDefaultAsync(u => u.Id == userId);
-            var toChangeTransaction = user.Transactions.FirstOrDefault(t => t.Id == transaction.Id);
-            toChangeTransaction.Description = transaction.Description;
-            toChangeTransaction.Date = transaction.Date;
-            toChangeTransaction.Value = transaction.Value;
-            toChangeTransaction.CategoryId = transaction.CategoryId;
-            toChangeTransaction.IsIncome = transaction.IsIncome;
+            var existing = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.Id == transaction.Id && t.UserId == userId);
+
+            if (existing == null) return;
+
+            existing.Description = transaction.Description;
+            existing.Date = transaction.Date;
+            existing.Value = transaction.Value;
+            existing.CategoryId = transaction.CategoryId;
+            existing.IsIncome = transaction.IsIncome;
+
             await _context.SaveChangesAsync();
+
+            await InvalidateCache(userId);
         }
 
         public async Task DeleteTransactionAsync(int transactionId, int userId)
         {
-            var user = await _context.Users.Include(u => u.Transactions).FirstOrDefaultAsync(u => u.Id == userId);
-            var toRemoveTransaction = user.Transactions.FirstOrDefault(t => t.Id == transactionId);
-            _context.Transactions.Remove(toRemoveTransaction);
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.Id == transactionId && t.UserId == userId);
+
+            if (transaction == null) return;
+
+            _context.Transactions.Remove(transaction);
             await _context.SaveChangesAsync();
+
+            await InvalidateCache(userId);
+        }
+
+        private async Task InvalidateCache(int userId)
+        {
+            await _cache.RemoveAsync($"transactions_dashboard_{userId}");
+            await _cache.RemoveAsync($"dashboard_summary_{userId}");
         }
     }
 }

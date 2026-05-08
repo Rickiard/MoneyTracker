@@ -27,7 +27,7 @@ See `PROJECT_STRUCTURE.md` for a detailed structure.
 
 ## Getting Started
 
-### Local Development
+### Run with Docker Compose
 
 1. **Clone the repository:**
    ```sh
@@ -35,31 +35,14 @@ See `PROJECT_STRUCTURE.md` for a detailed structure.
    ```
 2. **Navigate to the project directory:**
    ```sh
-   cd MoneyTracker/MoneyTracker
+   cd MoneyTracker
    ```
-3. **Restore dependencies:**
-   ```sh
-   dotnet restore
-   ```
-4. **Apply migrations and update the database:**
-   ```sh
-   dotnet ef database update
-   ```
-5. **Run the application:**
-   ```sh
-   dotnet run
-   ```
-6. **Open in browser:**
-   Visit `https://localhost:5001` (or the URL shown in the console)
-
-### Run with Docker Compose
-
-1. **Build and start the containers:**
+3. **Build and start the containers:**
    ```sh
    docker-compose up --build
    ```
-2. The API will be available at `http://localhost:8080` and SQL Server at `localhost:1433`.
-3. The connection string is pre-configured for Docker Compose in `docker-compose.yml`.
+4. The API will be available at `http://localhost:8080` and SQL Server at `localhost:1433` and Redis at `localhost:6379`.
+5. The connection string is pre-configured for Docker Compose in `docker-compose.yml`.
 
 > **Note:** The default SQL Server password is set in `docker-compose.yml`. Change it for production use.
 

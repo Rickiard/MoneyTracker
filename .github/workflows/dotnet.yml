@@ -1,4 +1,4 @@
-name: .NET CI
+name: .NET CICD
 
 on:
   push:
@@ -15,18 +15,45 @@ jobs:
         working-directory: ./MoneyTracker
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0
+          cache: true
 
-    - name: Restore
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Build
-      run: dotnet build --no-restore
+      - name: Build project
+        run: dotnet build --no-restore --configuration Release
 
-    - name: Test
-      run: dotnet test --no-build
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release
+
+      - name: Publish application
+        run: dotnet publish --configuration Release --output ./publish
+
+      - name: Validate Docker build
+        run: docker compose build
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            cd /var/www/MoneyTracker
+            git pull origin main
+            docker compose down
+            docker compose up -d --build

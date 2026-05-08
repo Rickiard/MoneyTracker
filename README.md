@@ -37,7 +37,7 @@ See `PROJECT_STRUCTURE.md` for a detailed structure.
    ```
 2. **Navigate to the project directory:**
    ```sh
-   cd MoneyTracker
+   cd MoneyTracker/MoneyTracker
    ```
 3. **Build and start the containers:**
    ```sh

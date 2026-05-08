@@ -3,14 +3,17 @@
     using Microsoft.EntityFrameworkCore;
     using MoneyTracker.Models;
     using MoneyTracker.DTOs;
+    using Microsoft.Extensions.Caching.Distributed;
 
     public class TransactionService : ITransactionService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IDistributedCache _cache;
 
-        public TransactionService(ApplicationDbContext context)
+        public TransactionService(ApplicationDbContext context, IDistributedCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public async Task<List<Category>> GetCategoriesAsync()

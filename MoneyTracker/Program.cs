@@ -13,6 +13,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetSection("Redis")["ConnectionString"];
+    options.InstanceName = "MoneyTracker_";
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

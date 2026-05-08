@@ -58,12 +58,8 @@ See `PROJECT_STRUCTURE.md` for a detailed structure.
    ```sh
    docker-compose up --build
    ```
-2. **Create Database in the container:**
-   ```sh
-   dotnet ef database update
-   ```
-3. The API will be available at `http://localhost:8080` and SQL Server at `localhost:1433`.
-4. The connection string is pre-configured for Docker Compose in `docker-compose.yml`.
+2. The API will be available at `http://localhost:8080` and SQL Server at `localhost:1433`.
+3. The connection string is pre-configured for Docker Compose in `docker-compose.yml`.
 
 > **Note:** The default SQL Server password is set in `docker-compose.yml`. Change it for production use.
 

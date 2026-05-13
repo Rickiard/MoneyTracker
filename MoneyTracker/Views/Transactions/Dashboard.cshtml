@@ -74,7 +74,7 @@
                                 </td>
                                 <td class="text-end">
                                     <strong class="@(transaction.IsIncome ? "text-success" : "text-danger")">
-                                        @(transaction.IsIncome ? "+" : "-")@transaction.Value.ToString("N2")€
+                                        @(transaction.IsIncome ? "+" : "-")@transaction.Value.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)€
                                     </strong>
                                 </td>
                                 <td class="text-center">
@@ -99,7 +99,7 @@
                 <div class="card bg-success text-white">
                     <div class="card-body">
                         <h6 class="card-title">Total Income</h6>
-                        <h3>@Model.Where(t => t.IsIncome).Sum(t => t.Value).ToString("N2")€</h3>
+                        <h3>@Model.Where(t => t.IsIncome).Sum(t => t.Value).ToString("N2", System.Globalization.CultureInfo.InvariantCulture)€</h3>
                     </div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                 <div class="card bg-danger text-white">
                     <div class="card-body">
                         <h6 class="card-title">Total Expenses</h6>
-                        <h3>@Model.Where(t => !t.IsIncome).Sum(t => t.Value).ToString("N2")€</h3>
+                        <h3>@Model.Where(t => !t.IsIncome).Sum(t => t.Value).ToString("N2", System.Globalization.CultureInfo.InvariantCulture)€</h3>
                     </div>
                 </div>
             </div>
@@ -120,7 +120,7 @@
                             var totalExpenses = Model.Where(t => !t.IsIncome).Sum(t => t.Value);
                             var balance = totalIncomes - totalExpenses;
                         }
-                        <h3>@balance.ToString("N2")€</h3>
+                        <h3>@balance.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)€</h3>
                     </div>
                 </div>
             </div>

@@ -53,6 +53,7 @@ namespace MoneyTracker.Services
                 return JsonSerializer.Deserialize<List<Transaction>>(cached)!;
 
             var transactions = await _context.Transactions
+                .Include(t => t.TransactionCategory)
                 .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.Date)
                 .ToListAsync();

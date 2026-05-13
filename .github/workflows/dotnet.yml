@@ -36,7 +36,7 @@ jobs:
         run: dotnet publish --configuration Release --output ./publish
 
       - name: Validate Docker build
-        run: docker-compose build
+        run: docker compose build
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'

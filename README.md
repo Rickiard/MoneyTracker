@@ -61,4 +61,4 @@ Money Tracker supports PWA features. When accessed via HTTPS on a mobile device,
 
 ## Deployment
 
-You can access the web application on: 
+You can access the web application on: https://34.73.186.196:8080/

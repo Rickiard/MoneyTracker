@@ -36,21 +36,11 @@
 ### Data/
 - **ApplicationDbContext.cs** - Entity Framework database context
 
+### Database/
+- **MoneyTracker.db** - SQLite database file (auto-generated, not included in source control)
+
 ### Migrations/
-- **20260503231031_InitialDatabase.cs** - Initial database schema
-- **20260503231031_InitialDatabase.Designer.cs** - Migration designer metadata
-- **20260504094024_AddCategories.cs** - Add categories migration
-- **20260504094024_AddCategories.Designer.cs**
-- **20260504132153_UpdateCategoryNames.cs**
-- **20260504132153_UpdateCategoryNames.Designer.cs**
-- **20260504133152_DefaultUser.cs**
-- **20260504133152_DefaultUser.Designer.cs**
-- **20260504142053_TransactionChanged.cs**
-- **20260504142053_TransactionChanged.Designer.cs**
-- **20260504142705_TransactionChanged2.cs**
-- **20260504142705_TransactionChanged2.Designer.cs**
-- **20260504144850_CategoryIdToInt.cs**
-- **20260504144850_CategoryIdToInt.Designer.cs**
+- **20260513100136_SqLiteDatabase** - Database migration for initial schema creation
 - **ApplicationDbContextModelSnapshot.cs** - Current model snapshot
 
 ### wwwroot/

@@ -22,6 +22,7 @@ A simple and organized web application for tracking personal finances, built wit
 - **Views/Transactions/**: Transaction-related pages (Dashboard, Add, Edit)
 - **Views/Shared/**: Layout, error, and shared partials
 - **Data/**: Entity Framework database context
+- **Database/**: Database files
 - **Migrations/**: Database schema migrations
 - **wwwroot/**: Static files (JS, CSS, icons, libraries)
 
@@ -57,3 +58,7 @@ Money Tracker supports PWA features. When accessed via HTTPS on a mobile device,
 - .NET 8 SDK
 - Docker & Docker Compose
 - SQL Server (or use the included Docker service)
+
+## Deployment
+
+You can access the web application on: 

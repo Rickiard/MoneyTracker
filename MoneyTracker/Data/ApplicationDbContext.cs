@@ -16,15 +16,16 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Transaction>()
-            .Property(t => t.Value)
-            .HasPrecision(18, 2);
+        modelBuilder.Entity<Transaction>(entity =>
+        {
+            entity.Property(t => t.Value)
+                  .IsRequired();
 
-        modelBuilder.Entity<Transaction>()
-            .HasOne(t => t.User)
-            .WithMany(u => u.Transactions)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(t => t.User)
+                  .WithMany(u => u.Transactions)
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Food & Dining", Icon = "🍔", ColorHex = "#FF6B6B" },

@@ -1,7 +1,4 @@
-version: "3.9"
-
 services:
-
   api:
     build:
       context: .
@@ -10,24 +7,14 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
       - redis
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=db;Database=MoneyTracker;User Id=sa;Password=MoneyTracker@2026!;TrustServerCertificate=True;
-      - Redis__ConnectionString=redis:6379
-
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: moneytracker-db
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=MoneyTracker@2026!
-    ports:
-      - "1433:1433"
+    env_file:
+      - .env
+    volumes:
+      - ./Database:/app/Database
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
     container_name: moneytracker-redis
     ports:
       - "6379:6379"

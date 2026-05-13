@@ -8,11 +8,10 @@ builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("SqliteConnection");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString, o =>
-    {
-        o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-    }));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString, o =>
+{
+    o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+}));
 
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 

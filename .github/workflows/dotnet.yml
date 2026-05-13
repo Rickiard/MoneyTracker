@@ -12,7 +12,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./MoneyTracker/MoneyTracker
+        working-directory: ./MoneyTracker
 
     steps:
       - name: Checkout repository

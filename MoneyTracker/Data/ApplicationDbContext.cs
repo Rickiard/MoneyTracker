@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MoneyTracker.Models;
+using static StackExchange.Redis.Role;
 
 public class ApplicationDbContext : DbContext
 {
@@ -42,8 +44,18 @@ public class ApplicationDbContext : DbContext
             new Category { Id = 12, Name = "Other", Icon = "📌", ColorHex = "#D9D9D9" }
         );
 
+        var hasher = new PasswordHasher<User>();
+
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1 }
+            new User
+            {
+                Id = 1,
+                username = "admin",
+                passwordHash = hasher.HashPassword(
+                    new User { Id = 1, username = "admin" },
+                    "admin"
+                )
+            }
         );
     }
 }

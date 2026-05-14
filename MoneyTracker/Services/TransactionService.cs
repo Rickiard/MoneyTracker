@@ -44,19 +44,63 @@ namespace MoneyTracker.Services
                 .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         }
 
-        public async Task<List<Transaction>> GetDashboardTransactionsAsync(int userId)
+        public async Task<List<Transaction>> GetDashboardTransactionsAsync(
+            int userId,
+            string? searchTerm = null,
+            string? type = null,
+            int? categoryId = null,
+            string? sortBy = "date",
+            bool isAscending = false)
         {
-            var cacheKey = $"transactions_dashboard_{userId}";
+            var versionKey = $"dashboard_cache_version_{userId}";
+            var version = await _cache.GetStringAsync(versionKey) ?? "1";
+
+            var cacheKey = $"transactions_dashboard_{userId}_v{version}_{searchTerm}_{type}_{categoryId}_{sortBy}_{isAscending}";
 
             var cached = await _cache.GetStringAsync(cacheKey);
+
             if (!string.IsNullOrEmpty(cached))
                 return JsonSerializer.Deserialize<List<Transaction>>(cached)!;
 
-            var transactions = await _context.Transactions
+            var query = _context.Transactions
                 .Include(t => t.TransactionCategory)
-                .Where(t => t.UserId == userId)
-                .OrderByDescending(t => t.Date)
-                .ToListAsync();
+                .Where(t => t.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(t =>
+                    t.Description.Contains(searchTerm));
+            }
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                if (type.Equals("income", StringComparison.OrdinalIgnoreCase))
+                    query = query.Where(t => t.IsIncome);
+                else if (type.Equals("expense", StringComparison.OrdinalIgnoreCase))
+                    query = query.Where(t => !t.IsIncome);
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(t => t.CategoryId == categoryId.Value);
+            }
+
+            query = sortBy?.ToLower() switch
+            {
+                "amount" => isAscending
+                    ? query.OrderBy(t => t.Value)
+                    : query.OrderByDescending(t => t.Value),
+
+                "description" => isAscending
+                    ? query.OrderBy(t => t.Description)
+                    : query.OrderByDescending(t => t.Description),
+
+                _ => isAscending
+                    ? query.OrderBy(t => t.Date)
+                    : query.OrderByDescending(t => t.Date)
+            };
+
+            var transactions = await query.ToListAsync();
 
             await _cache.SetStringAsync(
                 cacheKey,
@@ -71,32 +115,54 @@ namespace MoneyTracker.Services
 
         public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(List<Transaction> transactions, int userId)
         {
-            var cacheKey = $"dashboard_summary_{userId}";
+            var versionKey = $"dashboard_cache_version_{userId}";
+            var version = await _cache.GetStringAsync(versionKey) ?? "1";
+
+            var transactionHash = string.Join("_",
+                transactions
+                    .OrderBy(t => t.Id)
+                    .Select(t => $"{t.Id}-{t.Value}-{t.CategoryId}-{t.IsIncome}")
+            );
+
+            var cacheKey = $"dashboard_summary_{userId}_v{version}_{transactionHash.GetHashCode()}";
 
             var cached = await _cache.GetStringAsync(cacheKey);
+
             if (!string.IsNullOrEmpty(cached))
                 return JsonSerializer.Deserialize<DashboardSummaryDto>(cached)!;
 
             var categories = await GetCategoriesAsync();
 
-            var income = new List<decimal>(new decimal[categories.Count]);
-            var expenses = new List<decimal>(new decimal[categories.Count]);
+            var labels = new List<Category>();
+            var incomes = new List<decimal>();
+            var expenses = new List<decimal>();
 
-            foreach (var transaction in transactions)
+            foreach (var category in categories)
             {
-                var index = categories.FindIndex(c => c.Id == transaction.CategoryId);
-                if (index == -1) continue;
+                var categoryTransactions = transactions
+                    .Where(t => t.CategoryId == category.Id)
+                    .ToList();
 
-                if (transaction.IsIncome)
-                    income[index] += transaction.Value;
-                else
-                    expenses[index] += transaction.Value;
+                var totalIncome = categoryTransactions
+                    .Where(t => t.IsIncome)
+                    .Sum(t => t.Value);
+
+                var totalExpense = categoryTransactions
+                    .Where(t => !t.IsIncome)
+                    .Sum(t => t.Value);
+
+                if (totalIncome > 0 || totalExpense > 0)
+                {
+                    labels.Add(category);
+                    incomes.Add(totalIncome);
+                    expenses.Add(totalExpense);
+                }
             }
 
             var result = new DashboardSummaryDto
             {
-                Labels = categories,
-                Incomes = income,
+                Labels = labels,
+                Incomes = incomes,
                 Expenses = expenses
             };
 
@@ -154,7 +220,22 @@ namespace MoneyTracker.Services
         private async Task InvalidateCache(int userId)
         {
             await _cache.RemoveAsync($"transactions_dashboard_{userId}");
-            await _cache.RemoveAsync($"dashboard_summary_{userId}");
+
+            var versionKey = $"dashboard_cache_version_{userId}";
+
+            var currentVersion = await _cache.GetStringAsync(versionKey);
+
+            int newVersion = string.IsNullOrEmpty(currentVersion)
+                ? 1
+                : int.Parse(currentVersion) + 1;
+
+            await _cache.SetStringAsync(
+                versionKey,
+                newVersion.ToString(),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
+                });
         }
     }
 }

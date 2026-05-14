@@ -1,0 +1,119 @@
+﻿@model MoneyTracker.Models.User
+
+@{
+    ViewData["Title"] = "Login - Money Tracker";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-lg-10">
+            <div class="row shadow-lg rounded overflow-hidden">
+
+                <!-- Left Side Branding -->
+                <div class="col-md-6 bg-primary text-white p-5 d-flex flex-column justify-content-center">
+                    <h1 class="display-4 fw-bold">Money Tracker</h1>
+                    <h2 class="mb-4">Track your money smartly</h2>
+                    <p class="lead">
+                        Manage your income, expenses, and financial future with clarity.
+                    </p>
+
+                    <div class="mt-4">
+                        <div class="card bg-success text-white mb-3">
+                            <div class="card-body">
+                                <h6>Total Income Tracking</h6>
+                                <h3>Smart Insights</h3>
+                            </div>
+                        </div>
+
+                        <div class="card bg-danger text-white mb-3">
+                            <div class="card-body">
+                                <h6>Expense Monitoring</h6>
+                                <h3>Better Control</h3>
+                            </div>
+                        </div>
+
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h6>Balance Analytics</h6>
+                                <h3>Financial Growth</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side Login Form -->
+                <div class="col-md-6 bg-white p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Welcome Back</h2>
+                        <p class="text-muted">Login to access your dashboard</p>
+                    </div>
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            Invalid username or password.
+                        </div>
+                    }
+
+                    <form asp-action="Login" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label asp-for="username" class="form-label fw-semibold">Username</label>
+                            <input asp-for="username" class="form-control form-control-lg" placeholder="Enter your username" />
+                            <span asp-validation-for="username" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="passwordHash" class="form-label fw-semibold">Password</label>
+                            <input asp-for="passwordHash" type="password" class="form-control form-control-lg" placeholder="Enter your password" />
+                            <span asp-validation-for="passwordHash" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <p class="text-muted mb-2">Don't have an account?</p>
+                            <a asp-action="Register" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-person-plus"></i> Create Account
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #0d6efd;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .btn-primary {
+        transition: 0.3s ease-in-out;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -165,11 +165,11 @@ namespace MoneyTracker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("passwordHash")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("username")
+                    b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -181,8 +181,8 @@ namespace MoneyTracker.Migrations
                         new
                         {
                             Id = 1,
-                            passwordHash = "AQAAAAIAAYagAAAAEDEUbsXE3OucvRpcAqHFUK38arrpE5MIiEhJuwOUt/xRAHG+3U9bDFTX3QfJ55RGGg==",
-                            username = "admin"
+                            PasswordHash = "AQAAAAIAAYagAAAAEDEUbsXE3OucvRpcAqHFUK38arrpE5MIiEhJuwOUt/xRAHG+3U9bDFTX3QfJ55RGGg==",
+                            Username = "admin"
                         });
                 });
 

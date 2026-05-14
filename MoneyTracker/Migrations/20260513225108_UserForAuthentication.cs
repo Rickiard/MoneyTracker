@@ -11,14 +11,14 @@ namespace MoneyTracker.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "passwordHash",
+                name: "PasswordHash",
                 table: "Users",
                 type: "TEXT",
                 nullable: false,
                 defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
-                name: "username",
+                name: "Username",
                 table: "Users",
                 type: "TEXT",
                 nullable: false,
@@ -28,7 +28,7 @@ namespace MoneyTracker.Migrations
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 1,
-                columns: new[] { "passwordHash", "username" },
+                columns: new[] { "PasswordHash", "Username" },
                 values: new object[] { "AQAAAAIAAYagAAAAEDEUbsXE3OucvRpcAqHFUK38arrpE5MIiEhJuwOUt/xRAHG+3U9bDFTX3QfJ55RGGg==", "admin" });
         }
 
@@ -36,11 +36,11 @@ namespace MoneyTracker.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "passwordHash",
+                name: "PasswordHash",
                 table: "Users");
 
             migrationBuilder.DropColumn(
-                name: "username",
+                name: "Username",
                 table: "Users");
         }
     }

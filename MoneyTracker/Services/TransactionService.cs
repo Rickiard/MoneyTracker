@@ -219,14 +219,12 @@ namespace MoneyTracker.Services
 
         private async Task InvalidateCache(int userId)
         {
-            await _cache.RemoveAsync($"transactions_dashboard_{userId}");
-
             var versionKey = $"dashboard_cache_version_{userId}";
 
             var currentVersion = await _cache.GetStringAsync(versionKey);
 
             int newVersion = string.IsNullOrEmpty(currentVersion)
-                ? 1
+                ? 2
                 : int.Parse(currentVersion) + 1;
 
             await _cache.SetStringAsync(
@@ -236,6 +234,8 @@ namespace MoneyTracker.Services
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
                 });
+
+            await _cache.RemoveAsync($"transactions_dashboard_{userId}");
         }
     }
 }

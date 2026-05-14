@@ -22,12 +22,12 @@ namespace MoneyTracker.Services
         public async Task<bool> Register(User user)
         {
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.username == user.username);
+                .FirstOrDefaultAsync(u => u.Username == user.Username);
 
             if (existingUser != null)
                 return false;
 
-            user.passwordHash = _passwordHasher.HashPassword(user, user.passwordHash);
+            user.PasswordHash = _passwordHasher.HashPassword(user, user.PasswordHash);
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -38,15 +38,15 @@ namespace MoneyTracker.Services
         public async Task<User?> Login(User user)
         {
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.username == user.username);
+                .FirstOrDefaultAsync(u => u.Username == user.Username);
 
             if (existingUser == null)
                 return null;
 
             var result = _passwordHasher.VerifyHashedPassword(
                 existingUser,
-                existingUser.passwordHash,
-                user.passwordHash
+                existingUser.PasswordHash,
+                user.PasswordHash
             );
 
             if (result == PasswordVerificationResult.Failed)

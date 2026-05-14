@@ -35,7 +35,7 @@ namespace MoneyTracker.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, loggedUser.username),
+                new Claim(ClaimTypes.Name, loggedUser.Username),
                 new Claim(ClaimTypes.NameIdentifier, loggedUser.Id.ToString())
             };
 

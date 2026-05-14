@@ -50,9 +50,9 @@ public class ApplicationDbContext : DbContext
             new User
             {
                 Id = 1,
-                username = "admin",
-                passwordHash = hasher.HashPassword(
-                    new User { Id = 1, username = "admin" },
+                Username = "admin",
+                PasswordHash = hasher.HashPassword(
+                    new User { Id = 1, Username = "admin" },
                     "admin"
                 )
             }

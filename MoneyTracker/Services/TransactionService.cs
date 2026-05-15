@@ -66,10 +66,10 @@ namespace MoneyTracker.Services
                 .Include(t => t.TransactionCategory)
                 .Where(t => t.UserId == userId);
 
+            // Filtering
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(t =>
-                    t.Description.Contains(searchTerm));
+                query = query.Where(t => t.Description.Contains(searchTerm));
             }
 
             if (!string.IsNullOrWhiteSpace(type))
@@ -85,22 +85,32 @@ namespace MoneyTracker.Services
                 query = query.Where(t => t.CategoryId == categoryId.Value);
             }
 
-            query = sortBy?.ToLower() switch
+            // SQLite-safe sorting
+            List<Transaction> transactions;
+
+            if (sortBy?.ToLower() == "amount")
             {
-                "amount" => isAscending
-                    ? query.OrderBy(t => t.Value)
-                    : query.OrderByDescending(t => t.Value),
+                transactions = await query.ToListAsync();
 
-                "description" => isAscending
-                    ? query.OrderBy(t => t.Description)
-                    : query.OrderByDescending(t => t.Description),
+                transactions = isAscending
+                    ? transactions.OrderBy(t => t.IsIncome ? t.Value : -t.Value).ToList()
+                    : transactions.OrderByDescending(t => t.IsIncome ? t.Value : -t.Value).ToList();
+            }
+            else
+            {
+                query = sortBy?.ToLower() switch
+                {
+                    "description" => isAscending
+                        ? query.OrderBy(t => t.Description)
+                        : query.OrderByDescending(t => t.Description),
 
-                _ => isAscending
-                    ? query.OrderBy(t => t.Date)
-                    : query.OrderByDescending(t => t.Date)
-            };
+                    _ => isAscending
+                        ? query.OrderBy(t => t.Date)
+                        : query.OrderByDescending(t => t.Date)
+                };
 
-            var transactions = await query.ToListAsync();
+                transactions = await query.ToListAsync();
+            }
 
             await _cache.SetStringAsync(
                 cacheKey,

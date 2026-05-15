@@ -38,7 +38,15 @@ A full-stack personal finance tracking web application built with **ASP.NET Core
 - **Migrations/**: EF Core migrations
 - **docker-compose.yml**: Multi-container setup
 
-See `PROJECT_STRUCTURE.md` for a detailed structure.
+> See `PROJECT_STRUCTURE.md` for a detailed structure.
+
+## Demo Access
+To explore the application's features without creating a new account, you can use the following pre-configured credentials:
+
+* **Username:** `admin`
+* **Password:** `admin`
+
+> **Note:** These credentials can be used both on the [https://moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org) and when running the project locally via Docker.
 
 ## Run Locally (Docker)
 1. **Clone repository:**
@@ -158,4 +166,7 @@ Automated pipeline:
 - **HTTPS** mandatory for PWA features.
 
 ## Live URL
-👉 [https://moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)
+[https://moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)
+
+## Demo Video
+Watch the full application demo:

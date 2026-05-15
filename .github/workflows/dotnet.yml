@@ -52,7 +52,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           timeout: 300s
-          command_timeout: 3h
+          command_timeout: 5h
           script: |
             cd MoneyTracker/MoneyTracker
             git fetch origin main

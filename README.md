@@ -1,64 +1,161 @@
 # Money Tracker
 
-A simple and organized web application for tracking personal finances, built with ASP.NET Core (.NET 8) and Razor Pages.
+A full-stack personal finance tracking web application built with **ASP.NET Core (.NET 8)**, **MVC**, **Docker**, and deployed on a **Google Cloud VM** with **HTTPS**.
+
+**Live Demo:** [https://moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)
 
 ## Features
+- Add, edit and delete transactions
+- Income and expense tracking
+- Categories system
+- Dashboard with summaries and charts
+- Filtering, sorting and search
+- Responsive UI (Bootstrap)
+- Authentication system (session-based / cookie auth)
+- Redis caching for performance
+- Dockerized architecture
+- Progressive Web App (PWA) support
+- Production deployment with HTTPS
 
-- Add, edit, and delete transactions
-- Categorize transactions
-- View all transactions in a dashboard
-- User-friendly forms with validation
-- Responsive layout using Bootstrap
-- **PWA support**: Can be installed as a mobile app when accessed via HTTPS (see below)
-- **Dockerized**: Run with Docker and Docker Compose
+## Tech Stack
+- **ASP.NET Core 8 (MVC)**
+- **Entity Framework Core** (SQLite in production)
+- **Redis** (distributed cache)
+- **Docker & Docker Compose**
+- **Nginx** (reverse proxy)
+- **Certbot / Let’s Encrypt** (SSL)
+- **Cloud VM** (Google Cloud Compute Engine)
+- **DuckDNS** (free domain)
 
 ## Project Structure
-
-- **Controllers/**: Handles transaction CRUD operations
-- **DTOs/**: Data Transfer Objects for cross-layer data transfer (e.g., DashboardSummaryDto.cs)
-- **Models/Entities/**: Domain models (Transaction, User, Category)
-- **Models/ViewModels/**: View-specific models (e.g., ErrorViewModel)
-- **Services/**: Business logic layer containing service interfaces and implementations
-- **Views/Transactions/**: Transaction-related pages (Dashboard, Add, Edit)
-- **Views/Shared/**: Layout, error, and shared partials
-- **Data/**: Entity Framework database context
-- **Database/**: Database files
-- **Migrations/**: Database schema migrations
-- **wwwroot/**: Static files (JS, CSS, icons, libraries)
+- **Controllers/**: MVC controllers
+- **Models/**: Domain models (Transaction, User, Category)
+- **DTOs/**: Data transfer objects
+- **Services/**: Business logic layer
+- **Views/**: Razor UI (Dashboard, Auth, Transactions)
+- **Data/**: DbContext (Entity Framework)
+- **wwwroot/**: Static files (CSS, JS, icons)
+- **Migrations/**: EF Core migrations
+- **docker-compose.yml**: Multi-container setup
 
 See `PROJECT_STRUCTURE.md` for a detailed structure.
 
-## Getting Started
-
-### Run with Docker Compose
-
-1. **Clone the repository:**
-   ```sh
+## Run Locally (Docker)
+1. **Clone repository:**
+   ```bash
    git clone https://github.com/Rickiard/MoneyTracker.git
-   ```
-2. **Navigate to the project directory:**
-   ```sh
    cd MoneyTracker/MoneyTracker
    ```
-3. **Build and start the containers:**
-   ```sh
+2. **Start containers:**
+   ```bash
    docker-compose up --build
    ```
-4. The API will be available at `http://localhost:8080` and SQL Server at `localhost:1433` and Redis Cache at `localhost:6379`.
-5. The connection string is pre-configured for Docker Compose in `docker-compose.yml`.
+3. **Access application:**
+   - **Web App:** [http://localhost:8080](http://localhost:8080)
+   - **Redis:** `localhost:6379`
+   - (Optional DB container depending on config)
 
-> **Note:** The default SQL Server password is set in `docker-compose.yml`. Change it for production use.
+## Production Deployment (Google Cloud VM)
+This project is deployed on a **Google Cloud Compute Engine VM** (Ubuntu 24.04).
 
-## Progressive Web App (PWA)
+### 1. VM Setup
+- Ubuntu 24.04 LTS
+- Open firewall ports: `80` (HTTP), `443` (HTTPS), `8080` (app via Docker)
 
-Money Tracker supports PWA features. When accessed via HTTPS on a mobile device, you can install the app directly to your home screen, providing a native-like experience with offline support and fast startup.
+### 2. Install dependencies
+```bash
+sudo apt update
+sudo apt install docker.io docker-compose nginx certbot python3-certbot-nginx -y
+```
 
-## Requirements
+### 3. Clone project on VM
+```bash
+git clone https://github.com/Rickiard/MoneyTracker.git
+cd MoneyTracker/MoneyTracker
+```
 
-- .NET 8 SDK
-- Docker & Docker Compose
-- SQL Server (or use the included Docker service)
+### 4. Run application (Docker)
+```bash
+docker-compose up -d --build
+```
+App runs internally on: `http://localhost:8080`
 
-## Deployment
+## DuckDNS (Free Domain)
+This project uses **DuckDNS** free subdomain: [moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)
 
-You can access the web application on: http://35.196.96.109:8080/
+**Steps:**
+1. Create subdomain
+2. Point to VM public IP
+3. Ensure DNS propagation
+
+## Nginx Reverse Proxy
+Nginx forwards traffic from domain → Docker app.
+
+**Config file:** `/etc/nginx/sites-available/moneytracker`
+
+**Example:**
+```nginx
+server {
+    listen 80;
+    server_name moneytrackerfinances.duckdns.org;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+**Enable:**
+```bash
+sudo ln -s /etc/nginx/sites-available/moneytracker /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+## HTTPS Setup (Let’s Encrypt / Certbot)
+Free SSL certificate using **Let’s Encrypt** (issuer):
+```bash
+sudo certbot --nginx -d moneytrackerfinances.duckdns.org
+```
+
+**Auto-renew:**
+```bash
+sudo certbot renew --dry-run
+```
+
+## Final Architecture
+```mermaid
+graph TD
+    A[Internet] --> B[DuckDNS Domain]
+    B --> C[HTTPS Let's Encrypt]
+    C --> D[Nginx Reverse Proxy VM]
+    D --> E[Docker ASP.NET App port 8080]
+    E --> F[Redis Cache + SQLite DB]
+```
+
+## PWA Support
+The application supports **Progressive Web App (PWA)**:
+- Installable on mobile devices
+- Offline caching support
+- Fast startup experience
+- Works like a native app
+- **Requires HTTPS** (already configured in production)
+
+## CI/CD (GitHub Actions)
+Automated pipeline:
+1. Build project
+2. Run tests
+3. Build Docker image
+4. Deploy via SSH to VM
+5. Restart containers automatically
+
+## Notes
+- **SQLite** is used in production due to cloud limitations.
+- **Redis** is used for caching dashboard and summary data.
+- **Cache invalidation** implemented after CRUD operations.
+- **HTTPS** mandatory for PWA features.
+
+## Live URL
+👉 [https://moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)

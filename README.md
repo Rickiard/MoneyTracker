@@ -4,6 +4,11 @@ A full-stack personal finance tracking web application built with **ASP.NET Core
 
 **Live Demo:** [https://moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)
 
+## Demo Video
+Watch the full application demo:
+
+[![Watch the video](https://img.youtube.com/vi/NUys3qv_GSc/maxresdefault.jpg)](https://youtu.be/NUys3qv_GSc)
+
 ## Features
 - Add, edit and delete transactions
 - Income and expense tracking
@@ -168,5 +173,5 @@ Automated pipeline:
 ## Live URL
 [https://moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)
 
-## Demo Video
-Watch the full application demo:
+## Credits
+**Developed by:** Ricardo Teixeira

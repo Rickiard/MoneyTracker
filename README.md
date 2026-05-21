@@ -71,7 +71,7 @@ To explore the application's features without creating a new account, you can us
    - **Redis:** `localhost:6379`
    - (Optional DB container depending on config)
 
-## 🚀 Production Deployment Guide (Google Cloud VM)
+## Production Deployment Guide (Google Cloud VM)
 
 This application is deployed on a Linux Virtual Machine hosted on **Google Cloud Platform (GCP)**.
 

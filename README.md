@@ -22,15 +22,18 @@ Watch the full application demo:
 - Progressive Web App (PWA) support
 - Production deployment with HTTPS
 
-## Tech Stack
-- **ASP.NET Core 8 (MVC)**
-- **Entity Framework Core** (SQLite in production)
-- **Redis** (distributed cache)
-- **Docker & Docker Compose**
-- **Nginx** (reverse proxy)
-- **Certbot / Let’s Encrypt** (SSL)
-- **Cloud VM** (Google Cloud Compute Engine)
-- **DuckDNS** (free domain)
+## Tech Stack & Production Infrastructure
+- **Framework:** ASP.NET Core 8 (MVC)
+- **Frontend:** Razor Views + Bootstrap
+- **ORM:** Entity Framework Core
+- **Database:** SQLite (production)
+- **Cache:** Redis Distributed Cache
+- **Containerization:** Docker & Docker Compose
+- **Reverse Proxy:** Nginx
+- **SSL Certificates:** Certbot / Let’s Encrypt
+- **Infrastructure:** Google Cloud Compute Engine VPS
+- **Domain Provider:** DuckDNS
+- **Deployment Environment:** Linux (Ubuntu Server)
 
 ## Project Structure
 - **Controllers/**: MVC controllers
@@ -68,45 +71,106 @@ To explore the application's features without creating a new account, you can us
    - **Redis:** `localhost:6379`
    - (Optional DB container depending on config)
 
-## Production Deployment (Google Cloud VM)
-This project is deployed on a **Google Cloud Compute Engine VM** (Ubuntu 24.04).
+## 🚀 Production Deployment Guide (Google Cloud VM)
 
-### 1. VM Setup
-- Ubuntu 24.04 LTS
-- Open firewall ports: `80` (HTTP), `443` (HTTPS), `8080` (app via Docker)
+This application is deployed on a Linux Virtual Machine hosted on **Google Cloud Platform (GCP)**.
 
-### 2. Install dependencies
+### 1. Google Cloud VM Setup
+
+#### Create the Virtual Machine
+1. Open the [Google Cloud Console](https://console.cloud.google.com/).
+2. Navigate to: `Compute Engine` → `VM Instances`.
+3. Click `Create Instance`.
+
+#### VM Configuration
+*   **Name:** `moneytracker-vm`
+*   **Region:** Choose the closest region to your users.
+*   **Machine Type:** `e2-micro` (Free Tier eligible).
+*   **Boot Disk:**
+    *   **OS:** `Ubuntu`
+    *   **Version:** `Ubuntu 24.04 LTS`
+*   **Firewall:**
+    *   Allow HTTP traffic
+    *   Allow HTTPS traffic
+
+#### Reserve a Static External IP
+To prevent the VPS IP from changing after restarting the VM:
+1. Go to: `VPC Network` → `IP Addresses`.
+2. Locate the VM external IP.
+3. Click `Reserve Static Address`.
+4. Assign a name and save.
+
+#### Connect to the VPS
+Connect through SSH using:
 ```bash
-sudo apt update
-sudo apt install docker.io docker-compose nginx certbot python3-certbot-nginx -y
+ssh username@YOUR_EXTERNAL_IP
+```
+Or use the built-in Google Cloud SSH terminal.
+
+---
+
+### 2. Docker Installation
+
+Update the system:
+```bash
+sudo apt update && sudo apt upgrade -y
 ```
 
-### 3. Clone project on VM
+Install Docker and Docker Compose:
+```bash
+sudo apt install docker.io docker-compose -y
+```
+
+Enable Docker at startup:
+```bash
+sudo systemctl enable docker
+sudo systemctl start docker
+```
+
+Verify installation:
+```bash
+docker --version
+docker-compose --version
+```
+
+---
+
+### 3. Clone & Run the Application
+
+Install Git:
+```bash
+sudo apt install git -y
+```
+
+Clone the project:
 ```bash
 git clone https://github.com/Rickiard/MoneyTracker.git
 cd MoneyTracker/MoneyTracker
 ```
 
-### 4. Run application (Docker)
+Build and start the containers:
 ```bash
-docker-compose up -d --build
+docker-compose up --build -d
 ```
-App runs internally on: `http://localhost:8080`
 
-## DuckDNS (Free Domain)
-This project uses **DuckDNS** free subdomain: [moneytrackerfinances.duckdns.org](https://moneytrackerfinances.duckdns.org)
+---
 
-**Steps:**
-1. Create subdomain
-2. Point to VM public IP
-3. Ensure DNS propagation
+### 4. DuckDNS Configuration
 
-## Nginx Reverse Proxy
-Nginx forwards traffic from domain → Docker app.
+1. Create a free domain at [DuckDNS](https://www.duckdns.org) (e.g., `moneytrackerfinances.duckdns.org`).
+2. Point the domain to your VM's external IP.
+3. Verify with: `ping your-domain.duckdns.org`.
 
-**Config file:** `/etc/nginx/sites-available/moneytracker`
+---
 
-**Example:**
+### 5. Nginx Reverse Proxy Setup
+
+Install Nginx:
+```bash
+sudo apt install nginx -y
+```
+
+Create a configuration file: `sudo nano /etc/nginx/sites-available/moneytracker`
 ```nginx
 server {
     listen 80;
@@ -114,28 +178,61 @@ server {
 
     location / {
         proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection keep-alive;
         proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 ```
 
-**Enable:**
+Enable the configuration and restart Nginx:
 ```bash
 sudo ln -s /etc/nginx/sites-available/moneytracker /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## HTTPS Setup (Let’s Encrypt / Certbot)
-Free SSL certificate using **Let’s Encrypt** (issuer):
+---
+
+### 6. HTTPS with Let's Encrypt & Certbot
+
+Install Certbot:
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+```
+
+Generate SSL certificates:
 ```bash
 sudo certbot --nginx -d moneytrackerfinances.duckdns.org
 ```
 
-**Auto-renew:**
+---
+
+### 7. Firewall Configuration (UFW)
+
 ```bash
-sudo certbot renew --dry-run
+sudo ufw allow 22
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw enable
+sudo ufw status
+```
+
+---
+
+### 8. Container Management
+
+```bash
+# Restart all containers
+docker-compose restart
+
+# Stop containers
+docker-compose down
+
+# Start containers
+docker-compose up -d
 ```
 
 ## Final Architecture
